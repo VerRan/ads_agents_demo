@@ -179,7 +179,7 @@ with tab1:
                     # 显示分类结果
                     st.subheader("视频分类结果")
                     st.success(f"分类ID: {result['class_id']}")
-                    st.success(f"分类名称: {result['class_name']}")
+                    # st.success(f"分类名称: {result['class_name']}")
         else:
             st.error("文件上传失败，请重试。")
 
@@ -220,7 +220,7 @@ with tab2:
                         # 显示分类结果
                         st.subheader("视频分类结果")
                         st.success(f"分类ID: {result['class_id']}")
-                        st.success(f"分类名称: {result['class_name']}")
+                        # st.success(f"分类名称: {result['class_name']}")
                 except Exception as e:
                     st.error(f"下载或处理视频时出错: {e}")
 
@@ -268,7 +268,7 @@ with tab3:
                         result = process_video(file_path)
                     
                     if "error" not in result:
-                        response = f"我已经分析了这个视频。\n\n**视频内容理解**：\n{result['understanding']}\n\n**视频分类结果**：\n- 分类ID: {result['class_id']}\n- 分类名称: {result['class_name']}"
+                        response = f"我已经分析了这个视频。\n\n**视频内容理解**：\n{result['understanding']}\n\n**视频分类结果**：\n- 分类ID: {result['class_id']}"
                     else:
                         response = f"分析视频时出错: {result.get('error', '未知错误')}"
                     
