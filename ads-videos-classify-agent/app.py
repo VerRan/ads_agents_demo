@@ -2,6 +2,7 @@ import streamlit as st
 import boto3
 import os
 import time
+import re
 from strands import Agent, tool
 from agent import video_understand, video_classify, file_read, download_video
 
@@ -38,53 +39,97 @@ def save_uploaded_file(uploaded_file):
 
 # 创建处理视频的函数
 def process_video(file_path):
-    with st.spinner("正在分析视频内容..."):
-        try:
-            # Get the agent
-            agent = get_agent()
-            
-            # First step: understand the video
-            st.subheader("视频内容理解")
-            with st.status("正在理解视频内容...") as status:
-                understanding = video_understand(file_path)
-                # Create a container with max height to make it scrollable if content is too long
-                with st.container():
-                    st.markdown("""
-                    <style>
-                    .understanding-container {
-                        max-height: 200px;
-                        overflow-y: auto;
-                        border: 1px solid #e0e0e0;
-                        border-radius: 5px;
-                        padding: 10px;
-                    }
-                    </style>
-                    """, unsafe_allow_html=True)
-                    st.markdown(f'<div class="understanding-container">{understanding}</div>', unsafe_allow_html=True)
-                status.update(label="视频内容理解完成", state="complete")
-            
-            # Second step: classify the video
-            st.subheader("视频分类结果")
-            with st.status("正在分类视频...") as status:
-                classification = video_classify(understanding)
-                status.update(label="视频分类完成", state="complete")
-            
-            # Parse the classification result
-            try:
-                class_id = classification.strip()
-                # Extract the class name if in format "1:3D Printing"
-                if ":" in class_id:
-                    class_id, class_name = class_id.split(":", 1)
-                    st.success(f"分类ID: {class_id}")
-                    st.success(f"分类名称: {class_name}")
-                else:
-                    st.success(f"分类ID: {class_id}")
-            except Exception as e:
-                st.error(f"解析分类结果时出错: {e}")
-                st.write("原始分类结果:", classification)
+    try:
+        # Get the agent
+        agent = get_agent()
         
+        # First step: understand the video
+        with st.status("正在理解视频内容...") as status:
+            understanding = video_understand(file_path)
+            status.update(label="视频内容理解完成", state="complete")
+        
+        # Second step: classify the video
+        with st.status("正在分类视频...") as status:
+            classification = video_classify(understanding)
+            status.update(label="视频分类完成", state="complete")
+        
+        # Parse the classification result
+        try:
+            class_id = classification.strip()
+            # Extract the class name if in format "1:3D Printing"
+            if ":" in class_id:
+                class_id, class_name = class_id.split(":", 1)
+                result = {
+                    "understanding": understanding,
+                    "class_id": class_id,
+                    "class_name": class_name
+                }
+            else:
+                result = {
+                    "understanding": understanding,
+                    "class_id": class_id,
+                    "class_name": "未知类别"
+                }
+            return result
         except Exception as e:
-            st.error(f"处理视频时出错: {e}")
+            st.error(f"解析分类结果时出错: {e}")
+            return {
+                "understanding": understanding,
+                "class_id": "错误",
+                "class_name": "解析分类结果时出错",
+                "error": str(e),
+                "raw_classification": classification
+            }
+    
+    except Exception as e:
+        st.error(f"处理视频时出错: {e}")
+        return {
+            "error": str(e)
+        }
+
+# 显示视频函数
+def display_video(file_path):
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+        <style>
+        .video-container {
+            width: 400px;
+            margin: 0 auto;
+        }
+        .video-container > div {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        st.markdown('<div class="video-container">', unsafe_allow_html=True)
+        st.video(file_path)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# 检测URL的函数
+def is_url(text):
+    url_pattern = re.compile(
+        r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    )
+    return bool(url_pattern.search(text))
+
+# 从文本中提取URL
+def extract_url(text):
+    url_pattern = re.compile(
+        r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    )
+    match = url_pattern.search(text)
+    if match:
+        return match.group(0)
+    return None
 
 # Create temp directory if it doesn't exist
 if not os.path.exists("temp"):
@@ -92,10 +137,10 @@ if not os.path.exists("temp"):
 
 # App title and description
 st.title("🎬 广告视频分类助手")
-st.markdown("上传广告视频文件或输入视频URL，使用 Amazon Nova Pro 进行视频内容理解和分类")
+st.markdown("上传广告视频文件、输入视频URL或通过聊天方式分析视频")
 
-# 创建两个选项卡：上传文件和输入URL
-tab1, tab2 = st.tabs(["上传视频文件", "输入视频URL"])
+# 创建三个选项卡：上传文件、输入URL和聊天分析
+tab1, tab2, tab3 = st.tabs(["上传视频文件", "输入视频URL", "聊天分析"])
 
 with tab1:
     # File uploader
@@ -107,35 +152,34 @@ with tab1:
         file_path = save_uploaded_file(uploaded_file)
         
         if file_path:
-            # Display the video with controlled width using CSS
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                st.markdown("""
-                <style>
-                .video-container {
-                    width: 400px;
-                    margin: 0 auto;
-                }
-                .video-container > div {
-                    position: relative;
-                    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-                }
-                .video-container iframe {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                }
-                </style>
-                """, unsafe_allow_html=True)
-                st.markdown('<div class="video-container">', unsafe_allow_html=True)
-                st.video(file_path)
-                st.markdown('</div>', unsafe_allow_html=True)
+            # Display the video
+            display_video(file_path)
             
             # Process button
             if st.button("分析上传的视频"):
-                process_video(file_path)
+                st.subheader("视频内容理解")
+                result = process_video(file_path)
+                
+                if "error" not in result:
+                    # 显示理解结果
+                    with st.container():
+                        st.markdown("""
+                        <style>
+                        .understanding-container {
+                            max-height: 200px;
+                            overflow-y: auto;
+                            border: 1px solid #e0e0e0;
+                            border-radius: 5px;
+                            padding: 10px;
+                        }
+                        </style>
+                        """, unsafe_allow_html=True)
+                        st.markdown(f'<div class="understanding-container">{result["understanding"]}</div>', unsafe_allow_html=True)
+                    
+                    # 显示分类结果
+                    st.subheader("视频分类结果")
+                    st.success(f"分类ID: {result['class_id']}")
+                    st.success(f"分类名称: {result['class_name']}")
         else:
             st.error("文件上传失败，请重试。")
 
@@ -151,35 +195,103 @@ with tab2:
                     file_path = download_video(video_url)
                     
                     # 显示视频
-                    col1, col2, col3 = st.columns([1, 2, 1])
-                    with col2:
-                        st.markdown("""
-                        <style>
-                        .video-container {
-                            width: 400px;
-                            margin: 0 auto;
-                        }
-                        .video-container > div {
-                            position: relative;
-                            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-                        }
-                        .video-container iframe {
-                            position: absolute;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                        }
-                        </style>
-                        """, unsafe_allow_html=True)
-                        st.markdown('<div class="video-container">', unsafe_allow_html=True)
-                        st.video(file_path)
-                        st.markdown('</div>', unsafe_allow_html=True)
+                    display_video(file_path)
                     
                     # 处理视频
-                    process_video(file_path)
+                    st.subheader("视频内容理解")
+                    result = process_video(file_path)
+                    
+                    if "error" not in result:
+                        # 显示理解结果
+                        with st.container():
+                            st.markdown("""
+                            <style>
+                            .understanding-container {
+                                max-height: 200px;
+                                overflow-y: auto;
+                                border: 1px solid #e0e0e0;
+                                border-radius: 5px;
+                                padding: 10px;
+                            }
+                            </style>
+                            """, unsafe_allow_html=True)
+                            st.markdown(f'<div class="understanding-container">{result["understanding"]}</div>', unsafe_allow_html=True)
+                        
+                        # 显示分类结果
+                        st.subheader("视频分类结果")
+                        st.success(f"分类ID: {result['class_id']}")
+                        st.success(f"分类名称: {result['class_name']}")
                 except Exception as e:
                     st.error(f"下载或处理视频时出错: {e}")
+
+with tab3:
+    # 初始化聊天历史
+    if "messages" not in st.session_state:
+        st.session_state.messages = [
+            {"role": "assistant", "content": "你好！我是视频分类助手。你可以上传视频、提供视频URL或直接询问我关于视频分析的问题。例如：\n\n- 分析这个视频：https://example.com/video.mp4\n- 这个视频是什么类别的？\n- 帮我理解这个视频内容"}
+        ]
+    
+    # 显示聊天历史
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            # 如果消息中包含视频路径，显示视频
+            if message.get("video_path"):
+                display_video(message["video_path"])
+    
+    # 聊天输入
+    if prompt := st.chat_input("输入消息..."):
+        # 添加用户消息到历史
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # 显示用户消息
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        # 处理用户输入
+        with st.chat_message("assistant"):
+            # 检查是否包含URL
+            if is_url(prompt):
+                url = extract_url(prompt)
+                st.markdown(f"我发现了一个视频URL，正在下载并分析视频...")
+                
+                try:
+                    # 下载视频
+                    with st.spinner("正在下载视频..."):
+                        file_path = download_video(url)
+                    
+                    # 显示视频
+                    display_video(file_path)
+                    
+                    # 处理视频
+                    with st.spinner("正在分析视频..."):
+                        result = process_video(file_path)
+                    
+                    if "error" not in result:
+                        response = f"我已经分析了这个视频。\n\n**视频内容理解**：\n{result['understanding']}\n\n**视频分类结果**：\n- 分类ID: {result['class_id']}\n- 分类名称: {result['class_name']}"
+                    else:
+                        response = f"分析视频时出错: {result.get('error', '未知错误')}"
+                    
+                    # 添加助手回复到历史
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response, "video_path": file_path})
+                
+                except Exception as e:
+                    response = f"下载或处理视频时出错: {str(e)}"
+                    st.markdown(response)
+                    st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            # 处理文件上传请求
+            elif "上传" in prompt and "视频" in prompt:
+                response = "你可以通过'上传视频文件'选项卡上传视频，或者直接在聊天中提供视频URL。"
+                st.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            
+            # 处理一般问题
+            else:
+                response = "我是视频分类助手，可以帮你分析视频内容并进行分类。请提供视频URL或在'上传视频文件'选项卡上传视频文件。"
+                st.markdown(response)
+                st.session_state.messages.append({"role": "assistant", "content": response})
 
 # Display information about the classification categories
 with st.expander("查看所有分类类别"):
