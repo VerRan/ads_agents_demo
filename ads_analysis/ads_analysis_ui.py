@@ -9,7 +9,10 @@ from exa_py import Exa
 from strands import Agent, tool
 from strands_tools import file_read, file_write, editor
 
-API_KEY = "00a01fd0-0483-4bba-91b6-1a719838238a"
+# Import os module to access environment variables
+import os
+
+API_KEY = os.environ.get('API_KEY')
 @tool
 def exa_search(search_text) -> str:
     exa = Exa(api_key = API_KEY)

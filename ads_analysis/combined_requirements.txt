@@ -1,0 +1,15 @@
+streamlit
+strands
+strands-tools
+exa-py
+python-dotenv
+boto3
+botocore
+langchain-aws
+asyncio
+pathlib
+browser-use
+ffmpeg-python
+opencv-python
+pillow
+requests
