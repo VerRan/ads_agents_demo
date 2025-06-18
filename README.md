@@ -40,6 +40,7 @@ Together, these modules provide a complete toolkit for understanding and optimiz
   - Competitor analysis: Identify main competitors and compare differences
   - Market analysis: Analyze market size, trends, and opportunities
   - Audience analysis: Study target audience characteristics and behaviors
+  - SEO insights: Evaluate website optimization and keyword effectiveness
 
 - **Browser Automation**
   - AI-driven: Uses Amazon Bedrock Claude model to control the browser
@@ -47,6 +48,7 @@ Together, these modules provide a complete toolkit for understanding and optimiz
   - Flexible configuration: Adjust execution steps and connection parameters
   - Automatic reporting: Generate structured analysis reports
   - Remote CDP support: Connect to remote browser instances
+  - Screenshot capture: Visual documentation of website elements
 
 - **Integrated UI**
   - Unified entry point: Integrates website analysis and video classification
@@ -54,6 +56,7 @@ Together, these modules provide a complete toolkit for understanding and optimiz
   - Result integration: Summarize various analysis results into comprehensive reports
   - Intelligent assistant: Provide conversation-based analysis support
   - Form-based inputs: Easy configuration of analysis parameters
+  - Real-time feedback: Monitor analysis progress and intermediate results
 
 ### Video Classification Agent
 
@@ -64,12 +67,14 @@ Together, these modules provide a complete toolkit for understanding and optimiz
   - Automatically classify videos into 278 predefined categories
   - Display detailed classification results
   - User-friendly interface with video preview
+  - Frame-by-frame analysis capabilities
 
 - **Multiple Analysis Methods**
   - File upload: Analyze locally stored videos
   - URL analysis: Process videos from web sources
   - Chat-based analysis: Interact with the agent through conversation
   - Batch processing: Handle multiple videos sequentially
+  - Comparative analysis: Compare multiple videos for similarities and differences
 
 ## Technology Stack
 
@@ -87,12 +92,15 @@ Together, these modules provide a complete toolkit for understanding and optimiz
 - **Browser Automation**
   - Browser-Use - For website interaction and analysis
   - Chrome DevTools Protocol (CDP) - For browser control
+  - Playwright/Selenium - For advanced browser interactions
 
 - **Video Processing**
   - ffmpeg-python - For video file handling and processing
+  - OpenCV - For frame extraction and image processing
 
 - **Search and Analysis**
   - Exa API - For website content search and analysis
+  - AWS SDK (Boto3) - For AWS service integration
 
 ## Installation
 
@@ -139,6 +147,11 @@ export AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
+6. Install FFmpeg (if not already installed):
+   - **macOS**: `brew install ffmpeg`
+   - **Ubuntu/Debian**: `sudo apt-get install ffmpeg`
+   - **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html)
+
 ## Usage
 
 ### Running the Integrated UI
@@ -174,6 +187,7 @@ docker run -p 6081:6081 -p 5901:5901 -d --name vnc-browser dorowu/ubuntu-desktop
 3. Configure CDP connection in the UI:
    - Local connection: `http://localhost:9222`
    - Remote connection: Enter the remote CDP URL
+   - VNC URL (if using): `http://localhost:6081/vnc.html`
 
 ## Example Workflows
 
@@ -184,7 +198,23 @@ docker run -p 6081:6081 -p 5901:5901 -d --name vnc-browser dorowu/ubuntu-desktop
 3. Enter the target website URL
 4. Select analysis options (product, competitor, market, audience)
 5. Click "Analyze Website"
-6. Review the generated analysis report
+6. Review the generated analysis report with insights on:
+   - Product positioning and pricing strategy
+   - Competitive landscape and differentiators
+   - Market opportunities and trends
+   - Target audience demographics and behavior
+
+### Browser Automation Workflow
+
+1. Start Chrome with remote debugging enabled
+2. Launch the integrated UI
+3. Navigate to the "Browser Automation" tab
+4. Enter the CDP URL (default: http://localhost:9222)
+5. Specify the target website URL
+6. Enter your analysis instructions
+7. Click "Start Browser Automation"
+8. Monitor the browser actions in real-time
+9. Review the captured screenshots and analysis report
 
 ### Video Classification Workflow
 
@@ -194,6 +224,7 @@ docker run -p 6081:6081 -p 5901:5901 -d --name vnc-browser dorowu/ubuntu-desktop
 4. Initiate the analysis
 5. Review the video content understanding and classification results
 6. (Optional) Ask follow-up questions about the video content
+7. Export or save the analysis results for reporting
 
 ## Troubleshooting
 
@@ -204,23 +235,27 @@ docker run -p 6081:6081 -p 5901:5901 -d --name vnc-browser dorowu/ubuntu-desktop
    - Verify the CDP URL is correct (default: http://localhost:9222)
    - Check network connections and firewall settings
    - Try restarting the browser with the debugging port
+   - Use `curl http://localhost:9222/json/version` to test CDP connectivity
 
 2. **VNC Viewer Issues**
    - Ensure the VNC server is running properly
    - Verify port mappings are correct (default: 6081)
    - Try accessing the VNC URL directly in a new tab
    - Check Docker container status with `docker ps`
+   - Restart the VNC container if needed
 
 3. **API Authentication Errors**
    - Ensure EXA_API_KEY environment variable is correctly set
    - Verify AWS credentials are valid and have necessary permissions
    - Check that your AWS account has access to the required models
+   - Test AWS connectivity with `aws sts get-caller-identity`
 
 4. **Video Processing Issues**
-   - Check that FFmpeg is properly installed
+   - Check that FFmpeg is properly installed with `ffmpeg -version`
    - Ensure video files are in supported formats
    - Verify AWS permissions for accessing Nova Pro model
    - Check temporary directory permissions
+   - Try processing a smaller test video first
 
 ## Performance Optimization
 
@@ -228,6 +263,18 @@ docker run -p 6081:6081 -p 5901:5901 -d --name vnc-browser dorowu/ubuntu-desktop
 - Use local CDP connections when possible for faster browser automation
 - Adjust the number of browser steps based on website complexity
 - Consider batch processing for multiple videos
+- Use the appropriate AI model tier based on your analysis needs
+- Implement caching for frequently analyzed websites or videos
+- Monitor AWS usage to optimize costs for AI model calls
+
+## Security Considerations
+
+- Store API keys and credentials securely using environment variables
+- Do not hardcode sensitive information in your scripts
+- Use appropriate IAM roles and permissions for AWS services
+- Be mindful of the websites and videos you analyze, respecting privacy and copyright
+- Consider implementing rate limiting for API calls
+- Regularly update dependencies to address security vulnerabilities
 
 ## Future Enhancements
 
@@ -236,6 +283,8 @@ docker run -p 6081:6081 -p 5901:5901 -d --name vnc-browser dorowu/ubuntu-desktop
 - Enhanced reporting with data visualization
 - API endpoints for programmatic access
 - Multi-language support for global marketing analysis
+- Integration with popular marketing platforms and analytics tools
+- Automated scheduled analysis for ongoing monitoring
 
 ## Contributing
 

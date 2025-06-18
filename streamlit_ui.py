@@ -42,15 +42,15 @@ except ImportError:
     # Warning moved after page config
     st.warning("Browser automation features not available. Please install browser-use dependencies.")
 
-# # Import video analysis modules
-# sys.path.append(os.path.join(os.path.dirname(__file__), 'ads_agents_demo', 'ads-videos-classify-agent'))
-# try:
-#     from agent import video_understand, video_classify, download_video
-#     VIDEO_ANALYSIS_AVAILABLE = True
-# except ImportError:
+# Import video analysis modules
+sys.path.append(os.path.join(os.path.dirname(__file__), 'ads-materials-understand-agent'))
+try:
+    from agent import video_understand, video_classify, download_video
+    VIDEO_ANALYSIS_AVAILABLE = True
+except ImportError:
     VIDEO_ANALYSIS_AVAILABLE = False
-#     # Warning moved after page config
-#     st.warning("Video analysis features not available. Please check video analysis dependencies.")
+    # Warning moved after page config
+    st.warning("Video analysis features not available. Please check video analysis dependencies.")
 
 # Custom CSS for better styling
 st.markdown("""
@@ -111,13 +111,18 @@ if 'chat_messages' not in st.session_state:
 st.sidebar.title("🎯 功能导航")
 # analysis_mode = st.sidebar.selectbox(
 #     "选择分析模式",
-#     ["广告投前分析","落地页深度分析", "视频内容分析", "综合分析报告", "智能聊天助手"]
+#     ["广告投前分析","落地页深度分析", "广告素材分析", "综合分析报告", "智能聊天助手"]
 # )
 
 analysis_mode = st.sidebar.selectbox(
     "选择分析模式",
-    ["广告投前分析","落地页深度分析"]
+    ["广告投前分析","落地页深度分析", "广告素材分析"]
 )
+
+# analysis_mode = st.sidebar.selectbox(
+#     "选择分析模式",
+#     ["广告投前分析","落地页深度分析"]
+# )
 
 # Environment setup check
 st.sidebar.markdown("### 🔧 环境配置")
@@ -555,8 +560,8 @@ elif analysis_mode == "广告投前分析":
                 if st.button("🔄 刷新远程视图"):
                     st.rerun()
 
-elif analysis_mode == "视频内容分析":
-    st.header("🎬 视频内容分析")
+elif analysis_mode == "广告素材分析":
+    st.header("🎬 广告素材分析")
     
     if not VIDEO_ANALYSIS_AVAILABLE:
         st.error("视频分析功能不可用，请检查相关依赖")
@@ -812,7 +817,7 @@ elif analysis_mode == "智能聊天助手":
                 - 将视频分类到278个预定义类别中
                 - 支持上传文件或提供URL
                 
-                请切换到"视频内容分析"模式开始使用！
+                请切换到"广告素材分析"模式开始使用！
                 """
             elif any(keyword in prompt.lower() for keyword in ["浏览器", "自动化", "爬取"]):
                 response = """
