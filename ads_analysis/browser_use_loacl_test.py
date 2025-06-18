@@ -39,14 +39,21 @@ def get_llm():
 
 
 # Define the task for the agent
-task = (
+# task = (
 	
-	"Visit cnn.com, navigate to the 'World News' section, and identify the latest headline. "
-	'Open the first article and summarize its content in 3-4 sentences. '
-	'Additionally, analyze the sentiment of the article (positive, neutral, or negative) '
-	'and provide a confidence score for the sentiment. Present the result in a tabular format.'
-)
+# 	"Visit cnn.com, navigate to the 'World News' section, and identify the latest headline. "
+# 	'Open the first article and summarize its content in 3-4 sentences. '
+# 	'Additionally, analyze the sentiment of the article (positive, neutral, or negative) '
+# 	'and provide a confidence score for the sentiment. Present the result in a tabular format.'
+# )
 
+task = (
+	"Visit 126.com. "
+	'fill username as liu_ht,fill password as Dove1985*. '
+	'press login. '
+	'read the newest mail '
+	''
+)
 parser = argparse.ArgumentParser()
 parser.add_argument('--query', type=str, help='The query for the agent to execute', default=task)
 args = parser.parse_args()
@@ -56,7 +63,6 @@ llm = get_llm()
 browser_profile = BrowserProfile(
     executable_path=Path('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
 )
-
 browser_session = BrowserSession(browser_profile=browser_profile)
 
 agent = Agent(

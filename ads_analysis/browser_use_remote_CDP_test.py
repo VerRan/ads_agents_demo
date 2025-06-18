@@ -36,15 +36,25 @@ def get_llm():
 		max_tokens=None,
 		client=bedrock_client,
 	)
-
+password="dove1985"
 
 # Define the task for the agent
-task = (
+# task = (
 	
-	"Visit cnn.com, navigate to the 'World News' section, and identify the latest headline. "
-	'Open the first article and summarize its content in 3-4 sentences. '
-	'Additionally, analyze the sentiment of the article (positive, neutral, or negative) '
-	'and provide a confidence score for the sentiment. Present the result in a tabular format.'
+# 	"Visit cnn.com, navigate to the 'World News' section, and identify the latest headline. "
+# 	'Open the first article and summarize its content in 3-4 sentences. '
+# 	'Additionally, analyze the sentiment of the article (positive, neutral, or negative) '
+# 	'and provide a confidence score for the sentiment. Present the result in a tabular format.'
+# )
+
+
+task = (
+	f'fill username as verran.liu,fill password  as {password} . '
+	'press login. '
+	'read the newest mail '
+	'summarize the mail in 3-4 sentences. '
+	'close the tab '
+	''
 )
 
 parser = argparse.ArgumentParser()
@@ -58,10 +68,14 @@ llm = get_llm()
 # )
 
 browser_session = BrowserSession(cdp_url='http://localhost:9222')
-
+initial_actions = [
+	{'open_tab': {'url': 'https://mail.google.com/'}},
+	{'scroll_down': {'amount': 200}},
+]
 agent = Agent(
 	task=args.query,
 	llm=llm,
+	initial_actions=initial_actions,
 	controller=Controller(),
 	browser_session=browser_session,
 	validate_output=True,
