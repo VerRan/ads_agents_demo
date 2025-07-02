@@ -789,7 +789,7 @@ class Agent(Generic[Context]):
 
 		try:
 			browser_state_summary = await self.browser_session.get_state_summary(cache_clickable_elements_hashes=True)
-			current_page = await self.browser_session.get_current_page()
+			current_page = await self.browser_session.get_current_page()## response is a PlaywrightPage（from playwright.async_api import Page ） object
 
 			self._log_step_context(current_page, browser_state_summary)
 

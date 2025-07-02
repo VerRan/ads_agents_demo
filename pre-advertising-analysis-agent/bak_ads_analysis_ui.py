@@ -1,11 +1,18 @@
 import streamlit as st
 import sys
 import os
-from strands import Agent, tool
+import time
+import io
+from contextlib import redirect_stdout
+from strands import tool
 from exa_py import Exa
+from strands import Agent, tool
 from strands_tools import file_read, file_write, editor
 
-API_KEY = "00a01fd0-0483-4bba-91b6-1a719838238a"
+# Import os module to access environment variables
+import os
+
+API_KEY = os.environ.get('API_KEY')
 @tool
 def exa_search(search_text) -> str:
     exa = Exa(api_key = API_KEY)
@@ -15,76 +22,29 @@ def exa_search(search_text) -> str:
     )
     return str(result)
 
-
-def create_streaming_agent(content_placeholder, status_placeholder):
-    """创建支持流式输出的代理"""
+def agent(PROMPT):
+    # 创建一个StringIO对象来捕获输出
+    f = io.StringIO()
+    with redirect_stdout(f):
+        ads_analysis_agent = Agent(
+            system_prompt=(
+            "你是一名资深的广告分析师"
+            ),
+            tools=[exa_search]
+        )
+        
+        response = ads_analysis_agent(PROMPT)
     
-    def streaming_callback(**kwargs):
-        try:
-            if "data" in kwargs:
-                # 实时更新内容
-                if hasattr(streaming_callback, 'content'):
-                    streaming_callback.content += kwargs["data"]
-                else:
-                    streaming_callback.content = kwargs["data"]
-                
-                # 更新显示
-                with content_placeholder.container():
-                    st.markdown(streaming_callback.content)
-            
-            elif "current_tool_use" in kwargs:
-                current_tool_use = kwargs["current_tool_use"]
-                
-                # 检查 current_tool_use 是否是字典类型
-                if isinstance(current_tool_use, dict) and current_tool_use.get("name"):
-                    tool_name = current_tool_use["name"]
-                    tool_args = current_tool_use.get("input", {})
-                    
-                    # 生成工具使用的唯一标识
-                    tool_id = f"{tool_name}_{str(tool_args)}"
-                    
-                    # 检查是否已经显示过这个工具使用
-                    if not hasattr(streaming_callback, 'shown_tools'):
-                        streaming_callback.shown_tools = set()
-                    
-                    if tool_id not in streaming_callback.shown_tools:
-                        streaming_callback.shown_tools.add(tool_id)
-                        
-                        # 只在状态栏显示工具使用状态，不添加到内容中
-                        if tool_name == "exa_search":
-                            search_query = tool_args.get("search_text", "") if isinstance(tool_args, dict) else ""
-                            status_text = f"� 正在在搜索: {search_query[:50]}..."
-                        else:
-                            status_text = f"⚙️ 正在使用工具: {tool_name}"
-                        
-                        # 使用带有旋转图标的状态显示
-                        status_placeholder.info(f"⏳ {status_text}")
-                    
-                elif isinstance(current_tool_use, str):
-                    # 如果是字符串，检查是否已经显示过
-                    if not hasattr(streaming_callback, 'shown_tools'):
-                        streaming_callback.shown_tools = set()
-                    
-                    if current_tool_use not in streaming_callback.shown_tools:
-                        streaming_callback.shown_tools.add(current_tool_use)
-                        
-                        status_text = f"⚙️ 正在使用工具: {current_tool_use}"
-                        status_placeholder.info(f"⏳ {status_text}")
-                    
-        except Exception as e:
-            # 如果回调函数出错，记录但不中断主流程
-            st.error(f"流式输出回调错误: {str(e)}")
-            print(f"Callback error: {e}, kwargs: {kwargs}")
+    # 获取捕获的输出
+    output = f.getvalue()
     
-    # 初始化内容和工具跟踪
-    streaming_callback.content = ""
-    streaming_callback.shown_tools = set()
-    
-    return Agent(
-        system_prompt="你是一名资深的广告分析师，专门进行广告投放前的深度分析。请提供详细、专业的分析报告。",
-        tools=[exa_search],
-        callback_handler=streaming_callback
-    ), streaming_callback
+    # 如果有输出，则返回输出，否则尝试从响应中获取内容
+    if output and len(output.strip()) > 0:
+        return output
+    elif hasattr(response, 'content') and response.content:
+        return response.content
+    else:
+        return "# 分析报告\n\n正在生成分析结果，请稍后刷新页面查看。"
 
 def main():
     st.set_page_config(
@@ -129,8 +89,7 @@ def main():
         start_analysis = st.button("开始分析", type="primary")
         
         # 创建结果区域的占位符
-        status_placeholder = st.empty()
-        content_placeholder = st.empty()
+        result_placeholder = st.empty()
         
         if start_analysis and website_url:
             st.session_state.analysis_started = True
@@ -156,8 +115,7 @@ def main():
             
             if "产品分析" in analysis_options:
                 prompt += """
-
-## 1. 产品分析
+1.产品分析
 - 产品定位和特点
 - 产品线情况分析
 - 价格策略研究
@@ -167,8 +125,7 @@ def main():
             
             if "竞品分析" in analysis_options:
                 prompt += """
-
-## 2. 竞品分析
+2.竞品分析
 - 找出主要竞争对手
 - 竞品定位和差异对比
 - 竞品价格策略比较
@@ -178,8 +135,7 @@ def main():
             
             if "市场分析" in analysis_options:
                 prompt += """
-
-## 3. 市场分析
+3.市场分析
 - 全球市场规模和增长趋势
 - 市场细分和目标市场分析
 - 市场发展的推动和阻碍因素
@@ -189,8 +145,7 @@ def main():
             
             if "受众分析" in analysis_options:
                 prompt += """
-
-## 4. 受众分析
+4.受众分析
 - 目标受众的人口特征
 - 消费者行为和购买决策过程
 - 受众喜好和需求分析
@@ -199,51 +154,75 @@ def main():
 - 受众细分和个性化营销机会"""
             
             try:
-                # 显示开始状态
-                status_placeholder.info("🚀 开始分析，请稍候...")
+                # 创建进度条
+                progress_bar = st.progress(0)
+                status_text = st.empty()
                 
-                # 创建流式代理
-                streaming_agent, callback = create_streaming_agent(content_placeholder, status_placeholder)
+                # 模拟流式输出
+                status_text.text("正在收集网站信息...")
+                progress_bar.progress(10)
+                time.sleep(1)
                 
-                # 执行分析（流式输出）
-                response = streaming_agent(prompt)
+                status_text.text("正在分析产品特点...")
+                progress_bar.progress(25)
+                time.sleep(1)
                 
-                # 保存最终结果
-                st.session_state.result = callback.content
+                status_text.text("正在识别竞争对手...")
+                progress_bar.progress(40)
+                time.sleep(1)
+                
+                status_text.text("正在分析市场趋势...")
+                progress_bar.progress(60)
+                time.sleep(1)
+                
+                status_text.text("正在研究目标受众...")
+                progress_bar.progress(80)
+                time.sleep(1)
+                
+                status_text.text("正在生成分析报告...")
+                progress_bar.progress(95)
+                
+                # 调用分析代理
+                result = agent(prompt)
+                st.session_state.result = result
+                
+                # 完成分析
+                progress_bar.progress(100)
+                status_text.text("分析完成！")
+                time.sleep(1)
+                
+                # 清除进度显示
+                progress_bar.empty()
+                status_text.empty()
+                
                 st.session_state.analysis_complete = True
                 
-                # 显示完成状态
-                status_placeholder.success("✅ 分析完成！")
-                
             except Exception as e:
-                status_placeholder.error(f"❌ 分析过程中出现错误: {str(e)}")
-                st.error(f"详细错误信息: {str(e)}")
+                st.error(f"分析过程中出现错误: {str(e)}")
         elif not website_url and start_analysis:
             st.warning("请输入有效的网站URL")
         
-        # 显示下载按钮（如果分析完成）
-        if st.session_state.analysis_complete and st.session_state.result:
-            st.markdown("---")
-            col_download1, col_download2 = st.columns([1, 1])
-            with col_download1:
-                st.download_button(
-                    label="📥 下载分析报告 (Markdown)",
-                    data=st.session_state.result,
-                    file_name=f"{website_url.replace('https://', '').replace('http://', '').replace('/', '_')}_分析报告.md",
-                    mime="text/markdown",
-                    use_container_width=True
-                )
-            with col_download2:
-                # 重新分析按钮
-                if st.button("🔄 重新分析", use_container_width=True):
-                    st.session_state.analysis_started = False
-                    st.session_state.analysis_complete = False
-                    st.session_state.result = ""
-                    st.rerun()
-        
-        # 如果还没开始分析，显示提示
-        if not st.session_state.analysis_started:
-            st.info("👆 点击开始分析按钮开始网站分析")
+        # 显示分析结果
+        if st.session_state.analysis_started:
+            with result_placeholder.container():
+                st.subheader("分析结果")
+                
+                if st.session_state.analysis_complete:
+                    st.markdown(st.session_state.result)
+                    
+                    # 提供下载选项
+                    if st.session_state.result:  # 确保结果不为None
+                        st.download_button(
+                            label="下载分析报告",
+                            data=st.session_state.result,
+                            file_name=f"{website_url.replace('https://', '').replace('http://', '').replace('/', '_')}_分析报告.md",
+                        mime="text/markdown"
+                    )
+                else:
+                    st.info("分析正在进行中，请稍候...")
+        else:
+            with result_placeholder.container():
+                st.info("点击开始分析按钮开始网站分析")
     
     with col2:
         st.subheader("分析说明")
