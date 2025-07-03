@@ -5,3 +5,7 @@ numpy>=1.24.0
 exa-py
 boto3
 botocore
+fastapi>=0.104.0
+uvicorn>=0.24.0
+python-multipart>=0.0.6
+requests>=2.31.0

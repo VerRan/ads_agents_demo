@@ -1,165 +1,259 @@
-# 🎨 UI布局优化说明
+# 🤖 AI数据分析师演示平台
 
-## 📋 优化概述
+一个基于AI的智能数据分析平台，支持自然语言查询、实时流式输出和REST API集成。
 
-针对用户反馈的"显示区域有些小"的问题，我对demo_app.py的布局进行了全面优化，让代码执行过程的显示更加清晰和美观。
+## ✨ 核心功能
 
-## ✨ 主要改进
+- 🧠 **AI智能分析** - 使用自然语言提问，获得专业数据分析结果
+- 🔄 **实时流式输出** - 观看AI分析过程，包括代码执行和结果生成
+- 📊 **可视化界面** - 直观的Web界面，支持文件上传和历史管理
+- 🔗 **REST API** - 完整的API接口，支持系统集成和自动化
+- 📥 **多格式导出** - 支持Markdown、JSON、CSV等格式的报告下载
+- ☁️ **云端部署** - 一键部署到AWS，支持高可用和自动扩缩容
 
-### 1. 布局结构优化
+## 🚀 快速开始
 
-**之前的布局:**
-```
-[主内容区域 75%] [侧边栏 25%]
-                 - 状态信息
-                 - 进度条
-                 - 时间显示
-                 - 代码统计
-                 - 分析设置
-```
+### 本地运行
 
-**优化后的布局:**
-```
-[状态栏 - 3列等宽显示]
-[进度条 - 全宽]
-[分析设置 - 可折叠]
-[主内容区域 - 全宽显示]
-[统计面板 - 4列等宽]
-```
+```bash
+# 1. 安装依赖
+pip install -r requirements.txt
 
-### 2. 视觉改进
+# 2. 启动服务 (Web界面 + API)
+python start_services.py
 
-#### 状态栏设计
-- **3列等宽布局**: 状态信息、时间显示、代码执行统计
-- **统一样式**: 使用自定义CSS类`.analysis-status`
-- **视觉层次**: 清晰的边框和背景色区分
-
-#### 主内容区域
-- **全宽显示**: 充分利用屏幕空间
-- **代码块美化**: 使用`.code-execution`样式类
-- **内容分层**: 清晰的分隔线和背景色
-
-#### 进度显示
-- **全宽进度条**: 更直观的进度展示
-- **实时更新**: 状态、时间、代码统计同步更新
-
-### 3. CSS样式增强
-
-```css
-.analysis-status {
-    background-color: #f0f8ff;
-    padding: 0.8rem;
-    border-radius: 8px;
-    border-left: 4px solid #1f77b4;
-    margin: 0.5rem 0;
-    font-size: 0.9rem;
-}
-
-.code-execution {
-    background-color: #f5f5f5;
-    padding: 1rem;
-    border-radius: 8px;
-    border-left: 4px solid #28a745;
-    margin: 1rem 0;
-}
-
-.status-row {
-    background-color: #fafafa;
-    padding: 1rem;
-    border-radius: 10px;
-    margin: 1rem 0;
-    border: 1px solid #e0e0e0;
-}
+# 3. 访问应用
+# Web界面: http://localhost:8501
+# REST API: http://localhost:8000
+# API文档: http://localhost:8000/docs
 ```
 
-## 🔍 具体优化点
+### Docker运行
 
-### 状态显示优化
-- **紧凑格式**: 减少冗余文字，突出关键信息
-- **图标使用**: 使用emoji增强视觉识别
-- **实时更新**: 状态变化即时反映
+```bash
+# 构建并启动
+docker-compose up
 
-### 代码执行显示
-- **步骤编号**: 清晰的执行步骤标识
-- **目的说明**: 每步代码的功能描述
-- **执行时间**: 精确的时间统计
-
-### 内容区域优化
-- **全屏利用**: 移除侧边栏限制，使用全宽显示
-- **分层展示**: 使用容器和样式类分层显示内容
-- **滚动优化**: 长内容自动滚动，保持界面整洁
-
-## 📊 用户体验提升
-
-### 视觉体验
-- **更大的显示区域**: 主内容区域从75%扩展到100%
-- **更清晰的层次**: 使用颜色和边框区分不同内容
-- **更美观的样式**: 统一的设计语言和视觉风格
-
-### 信息密度
-- **合理的信息分布**: 重要信息突出显示
-- **减少视觉噪音**: 简化不必要的装饰元素
-- **提高可读性**: 合适的字体大小和行间距
-
-### 交互体验
-- **响应式设计**: 适应不同屏幕尺寸
-- **实时反馈**: 即时的状态更新和进度显示
-- **直观操作**: 清晰的操作指引和反馈
-
-## 🎯 演示效果
-
-### 代码执行显示示例
-```
-🔍 分析过程
-┌─────────────────────────────────────────────────────────┐
-│ 🚀 正在执行分析...  │ ⏱️ 分析时间: 1.2秒  │ 🐍 第2步: 读取数据 ⏳ │
-└─────────────────────────────────────────────────────────┘
-████████████████████████████████████████████████████ 60%
-
-📊 分析内容
-┌─────────────────────────────────────────────────────────┐
-│ 🐍 正在执行Python代码 (第2步):                           │
-│                                                         │
-│ 📋 代码信息:                                            │
-│ - 目的: 读取和加载数据文件                               │
-│ - 复杂度: 中等 🟡                                       │
-│ - 预计用时: 预计 2-5秒 (数据读取)                        │
-│                                                         │
-│ ```python                                               │
-│ df = pd.read_csv('google.campaign_daily_geo_stats.csv') │
-│ print(f'数据形状: {df.shape}')                          │
-│ ```                                                     │
-│                                                         │
-│ ⏳ 执行中，请稍候...                                     │
-└─────────────────────────────────────────────────────────┘
+# 后台运行
+docker-compose up -d
 ```
 
-## 🚀 部署说明
+### AWS部署
 
-### 测试新布局
-1. 运行布局测试: `streamlit run test_layout.py --server.port 8504`
-2. 运行完整应用: `streamlit run demo_app.py --server.port 8501`
+```bash
+# 一键部署到AWS ECS Fargate
+./deploy.sh
+```
 
-### 验证要点
-- [x] 状态栏3列等宽显示
-- [x] 进度条全宽显示
-- [x] 主内容区域全宽利用
-- [x] 代码执行过程清晰显示
-- [x] 统计信息紧凑展示
-- [x] CSS样式正确应用
+## 📱 使用方式
 
-## 📈 性能影响
+### 1. Web界面使用
 
-### 渲染性能
-- **优化**: 减少不必要的DOM元素
-- **提升**: 使用CSS类而非内联样式
-- **改进**: 合理的组件更新频率
+1. **上传数据** - 支持CSV文件上传或使用示例数据
+2. **自然语言提问** - 例如："这个数据集有多少行？"、"哪个广告系列效果最好？"
+3. **观看分析过程** - 实时查看AI执行的Python代码和结果
+4. **下载报告** - 多种格式的分析报告下载
 
-### 用户体验
-- **加载速度**: 无明显影响
-- **响应性**: 实时更新更流畅
-- **可用性**: 界面更直观易用
+### 2. REST API使用
+
+```python
+from api_client import AIAnalystAPIClient
+
+# 创建客户端
+client = AIAnalystAPIClient("http://localhost:8000")
+
+# 上传文件
+result = client.upload_file("data.csv")
+file_id = result['file_name']
+
+# 数据分析
+analysis = client.analyze_data("请分析数据的基本统计信息", file_id)
+print(analysis['result'])
+
+# 流式分析
+for chunk in client.analyze_data_stream("数据质量如何？", file_id):
+    print(chunk)
+```
+
+### 3. cURL示例
+
+```bash
+# 健康检查
+curl http://localhost:8000/health
+
+# 数据分析
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"query": "这个数据集有多少行数据？"}'
+
+# 使用分析模板
+curl -X POST http://localhost:8000/analyze/template/basic_stats
+```
+
+## 🏗️ 架构概览
+
+```
+┌─────────────────┐    ┌─────────────────┐
+│   Streamlit     │    │    FastAPI      │
+│   Web界面       │    │    REST API     │
+│   :8501         │    │    :8000        │
+└─────────────────┘    └─────────────────┘
+         │                       │
+         └───────────┬───────────┘
+                     │
+         ┌─────────────────┐
+         │ AI分析引擎       │
+         │ (Bedrock)       │
+         └─────────────────┘
+```
+
+## 📊 主要API端点
+
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/health` | GET | 健康检查 |
+| `/upload` | POST | 上传CSV文件 |
+| `/analyze` | POST | 数据分析 |
+| `/analyze/stream` | POST | 流式分析 |
+| `/analyze/template/{key}` | POST | 模板分析 |
+| `/data/preview` | POST | 数据预览 |
+| `/files` | GET | 文件列表 |
+
+## �️ 开发 指南
+
+### 项目结构
+
+```
+ads_data_analyst_agent/
+├── demo_app.py              # Streamlit Web应用
+├── api_server.py            # FastAPI REST服务
+├── google_ads_anlyst_agent.py # AI分析核心
+├── api_client.py            # Python客户端
+├── start_services.py        # 服务启动器
+├── requirements.txt         # Python依赖
+├── Dockerfile              # Docker配置
+├── docker-compose.yml      # Docker Compose
+├── deploy.sh               # AWS部署脚本
+└── terraform/              # AWS基础设施代码
+```
+
+### 启动选项
+
+```bash
+# 启动所有服务
+python start_services.py
+
+# 只启动Web界面
+python start_services.py --streamlit
+
+# 只启动API服务
+python start_services.py --api
+
+# 显示帮助
+python start_services.py --help
+```
+
+### 测试
+
+```bash
+# API功能测试
+python test_api.py
+
+# 本地Web界面测试
+streamlit run demo_app.py
+```
+
+## ☁️ AWS部署
+
+### 部署架构
+
+- **ECS Fargate** - 无服务器容器运行
+- **Application Load Balancer** - 负载均衡和路由
+- **CloudFront** - CDN加速
+- **ECR** - 容器镜像仓库
+- **CloudWatch** - 监控和日志
+
+### 部署步骤
+
+```bash
+# 1. 配置AWS凭证
+aws configure
+
+# 2. 一键部署
+./deploy.sh
+
+# 3. 访问应用
+# Web界面: http://your-alb-dns/
+# API服务: http://your-alb-dns/api/
+```
+
+### 成本估算
+
+- **基础配置**: ~$70-85/月
+- **包含**: 2个Fargate任务、ALB、CloudFront、日志存储
+
+## 🔧 配置说明
+
+### 环境变量
+
+```bash
+AWS_DEFAULT_REGION=us-east-1    # AWS区域
+STREAMLIT_SERVER_HEADLESS=true  # Streamlit无头模式
+```
+
+### 自定义配置
+
+- **修改端口**: 编辑`start_services.py`中的端口配置
+- **调整资源**: 修改`terraform/variables.tf`中的CPU/内存配置
+- **更换模型**: 在`google_ads_anlyst_agent.py`中配置不同的AI模型
+
+## 📚 详细文档
+
+- [API详细文档](docs/API_DOCUMENTATION.md)
+- [AWS部署指南](docs/AWS_DEPLOYMENT_GUIDE.md)
+- [REST API集成说明](docs/REST_API_INTEGRATION.md)
+
+## 🐛 故障排除
+
+### 常见问题
+
+1. **端口占用**
+   ```bash
+   # 检查端口使用情况
+   lsof -i :8501
+   lsof -i :8000
+   ```
+
+2. **依赖安装失败**
+   ```bash
+   # 升级pip并重新安装
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+3. **AWS部署失败**
+   ```bash
+   # 检查AWS凭证
+   aws sts get-caller-identity
+   
+   # 查看详细错误
+   ./deploy.sh --help
+   ```
+
+### 获取帮助
+
+- 查看日志: `docker-compose logs`
+- API状态: `curl http://localhost:8000/health`
+- Web状态: 访问 `http://localhost:8501`
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request来改进这个项目！
+
+## 📄 许可证
+
+MIT License
 
 ---
 
-🎉 **优化后的布局让代码执行过程的显示更加清晰、美观和专业！**
+🚀 **开始你的AI数据分析之旅吧！**
