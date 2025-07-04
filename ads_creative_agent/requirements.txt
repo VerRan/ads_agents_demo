@@ -1,0 +1,11 @@
+# Core dependencies for Ads Creative Agent
+streamlit>=1.28.0
+pillow>=9.0.0
+requests>=2.25.0
+boto3>=1.26.0
+strands>=0.1.0
+strands-tools>=0.1.0
+
+# Optional dependencies
+numpy>=1.21.0
+pandas>=1.3.0
