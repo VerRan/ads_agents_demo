@@ -1,0 +1,25 @@
+default_agent: ads_go_pre_advertisement_agent
+agents:
+  ads_go_pre_advertisement_agent:
+    name: ads_go_pre_advertisement_agent
+    entrypoint: /Users/lht/Documents/GitHub/ads_demo/ads_agents_demo/pre-advertising-analysis-agent/multi-agents/ads_go_agent_as_tool_core_agent.py
+    platform: linux/arm64
+    container_runtime: docker
+    aws:
+      execution_role: arn:aws:iam::517141035927:role/agentcore-strands_claude-role
+      account: '517141035927'
+      region: us-west-2
+      ecr_repository: 517141035927.dkr.ecr.us-west-2.amazonaws.com/bedrock_agentcore-ads_go_pre_advertisement_agent
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: ads_go_pre_advertisement_agent-D9H40bFFVs
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:517141035927:runtime/ads_go_pre_advertisement_agent-D9H40bFFVs
+      agent_session_id: null
+    authorizer_configuration: null
+    oauth_configuration: null
